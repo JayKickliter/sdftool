@@ -21,12 +21,9 @@ struct Opts {
 }
 
 fn main() {
-    match go() {
-        Err(e) => {
-            eprintln!("{e}");
-            std::process::exit(1)
-        }
-        Ok(()) => (),
+    if let Err(e) = go() {
+        eprintln!("{e}");
+        std::process::exit(1)
     }
 }
 
@@ -34,7 +31,7 @@ fn go() -> anyhow::Result<()> {
     let opts = Opts::parse();
     let out_dir = opts
         .out
-        .ok_or_else(|| std::env::current_dir())
+        .ok_or_else(std::env::current_dir)
         .expect("not a path");
     let mut work_items: Vec<(BufReader<File>, BufWriter<File>)> =
         Vec::with_capacity(opts.input.len());
@@ -72,22 +69,17 @@ where
     let mut y = 0;
     for line in src.lines().skip(4) {
         let elev = i16::from_str(&line?)?;
-        if elev > max {
-            max = elev;
-        }
-        if elev < min {
-            min = elev;
-        }
+        min = std::cmp::min(min, elev);
+        max = std::cmp::max(max, elev);
         vec[(y * 1200) + x] = elev;
         y += 1;
         if y == 1200 {
             y = 0;
             x += 1;
         }
-        //dst.write_i16::<LE>(elev)?;
     }
-    for elev in vec.iter() {
-        dst.write_i16::<LE>(*elev)?;
+    for elev in vec {
+        dst.write_i16::<LE>(elev)?;
     }
     dst.write_i16::<LE>(min)?;
     dst.write_i16::<LE>(max)?;
