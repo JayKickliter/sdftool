@@ -65,10 +65,32 @@ where
     S: BufRead,
     D: Write,
 {
+    let mut min = 0;
+    let mut max = 0;
+    let mut vec = vec![0; 1200*1200];
+    let mut x = 0;
+    let mut y = 0;
     for line in src.lines().skip(4) {
         let elev = i16::from_str(&line?)?;
-        dst.write_i16::<LE>(elev)?;
+        if elev > max {
+            max = elev;
+        }
+        if elev < min {
+            min = elev;
+        }
+        vec[(y*1200)+x] = elev;
+        y += 1;
+        if y == 1200 {
+            y = 0;
+            x += 1;
+        }
+        //dst.write_i16::<LE>(elev)?;
     }
+    for elev in vec.iter() {
+        dst.write_i16::<LE>(*elev)?;
+    }
+    dst.write_i16::<LE>(min)?;
+    dst.write_i16::<LE>(max)?;
     dst.flush()?;
     Ok(())
 }
