@@ -65,9 +65,9 @@ where
     S: BufRead,
     D: Write,
 {
-    let mut min = 0;
-    let mut max = 0;
-    let mut vec = vec![0; 1200*1200];
+    let mut min = i16::MAX;
+    let mut max = i16::MIN;
+    let mut vec = vec![0; 1200 * 1200];
     let mut x = 0;
     let mut y = 0;
     for line in src.lines().skip(4) {
@@ -78,7 +78,7 @@ where
         if elev < min {
             min = elev;
         }
-        vec[(y*1200)+x] = elev;
+        vec[(y * 1200) + x] = elev;
         y += 1;
         if y == 1200 {
             y = 0;
